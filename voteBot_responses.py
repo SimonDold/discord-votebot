@@ -3,6 +3,7 @@ import random
 import bot_memory
 import utils
 from utils import BOT_CHAR
+from info import VERSION
 
 from datetime import datetime, timedelta
 
@@ -17,6 +18,9 @@ def default(content, author):
 
 def greet(content, author):
     return f"""beep beep boop {author.id} (this is bot language for "hello {author.nick}.")"""
+
+def version(content, author):
+    return f"""VoteBot Version: {VERSION}."""
 
 
 def suggestion_key_to_txt(key):
@@ -268,6 +272,7 @@ responses_dict = {
     "admin_show_participation": [show_participation, "show all join/skip claims"],
     "admin_sp": [show_participation, f"shorthand for {BOT_CHAR}show_participation"],
     "admin_hi": [greet, f"greeting each other"],
+    "admin_version": [version, f"check the version"],
     "admin_remove_suggestion": [remove, f"'{BOT_CHAR}remove [string]' to remove a suggestion"],
     "admin_remove_user": [remove_user, f"remove user from suggestions and in_claims"],
     "admin_set_upcoming_date": [admin_set_upcoming_date, f"set the upcoming date for the meeting"],
