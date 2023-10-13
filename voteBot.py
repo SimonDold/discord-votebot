@@ -22,13 +22,15 @@ intents.reactions = True  # Enable the reactions intent
 
 async def react_message(message, message_content, is_private):
     try:
-        response_list = responses.handle_responses(message_content, message, is_private)
+        response_list, delete = responses.handle_responses(message_content, message, is_private)
         for response in response_list:
             offset = 0
             while offset < len(response):
                 chunk = response[offset:offset + 2000]
                 offset += 2000
                 await message.author.send(response) if is_private else await message.channel.send(chunk)
+        if delete:
+            await message.delete()
     except Exception as e:
         print(e)
 
