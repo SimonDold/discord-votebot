@@ -14,20 +14,25 @@ Setup:
 
 2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel".
 
-3. Create a file 'votebot/.env' to define the environment variables.
+1. Clone this repository.
+
+1. Create a file 'votebot/.env' to define the environment variables.
 It should be of the pattern:
     
         BOT_TOKEN=<your personal bot token>
         ADMIN_ID=<discord user id of you>
         MEETING_CHANNEL_ID=<id of the textchannel called 'meetings'>
 
-4. Start the bot with:
+1. Navigate into this repository.
+
+1. Start the bot with:
 
          sudo docker-compose up --build -d
 
-5. Interact with the bot by sending it the message "!help" or "!admin_help" in the channel 
+1. Interact with the bot by sending it the message "!help" or "!admin_help" in the channel 
 "paper-suggestions", "votebot-channel" or as a private message.
-6. Stop the bot with:
+
+1. Stop the bot with:
     
          sudo docker-compose down
 
