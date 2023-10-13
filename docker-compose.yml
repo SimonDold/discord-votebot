@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  vote_bot:
+    image: votebot:1.0
+    build:
+      context: .
+    init: true
+    restart: always
+    volumes:
+      - votebot-data:/voteBot/data:rw
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_ID=${ADMIN_ID}
+      - MEETING_CHANNEL_ID=${MEETING_CHANNEL_ID}
+      
+volumes:
+  votebot-data:
