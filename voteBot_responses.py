@@ -51,7 +51,7 @@ def suggest(message):
 
     msg = f"Suggestion:\n{suggestion_key_to_txt(key)}" + msg
     bot_memory.update_suggestions(paper, author.id, "👍")
-    return [msg], True
+    return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
 def remove(message):
@@ -68,13 +68,13 @@ def remove(message):
 
     msg = f"\n{suggestion_key_to_txt(key)}" + msg
     bot_memory.remove_suggestions(paper)
-    return [msg], False
+    return [msg], False, None
 
 
 def remove_user(message):
     author, content = prep_author_and_content(message)
     bot_memory.remove_user(content)
-    return ["removed " + content], False
+    return ["removed " + content], False, None
 
 
 def suggestions(message):
@@ -84,12 +84,12 @@ def suggestions(message):
         lst.append("Suggestion:\n" + utils.untuple_str(suggestion) + "\n\n")
     if len(lst) == 0:
         lst = ["There are no suggestions at the moment. Add one with !suggest [string]."]
-    return lst, False
+    return lst, False, None
 
 
 def my_votes(message):
     author, content = prep_author_and_content(message)
-    return bot_memory.get_user_votes_table(author.id), False
+    return bot_memory.get_user_votes_table(author.id), False, None
 
 
 def all_votes(message):
@@ -97,7 +97,7 @@ def all_votes(message):
     msgs = ["ALL VOTES:"]
     for m in bot_memory.get_suggestions_table():
         msgs += [str(m)]
-    return msgs, False
+    return msgs, False, None
 
 
 def claim_in(user_id):
@@ -118,7 +118,7 @@ def vote(message):
     vote_winner, vote_info = utils.get_winner()
     print(f"the winner is...\n{utils.untuple_str(vote_winner)}\n\n{vote_info}")
     winner_list.append(vote_winner)
-    return [f"Winner is:\n{utils.untuple_str(vote_winner)}\n\n{vote_info}"], False
+    return [f"Winner is:\n{utils.untuple_str(vote_winner)}\n\n{vote_info}"], False, None
 
 
 def accept_by_rank(rank):
@@ -137,7 +137,7 @@ def accept_by_rank(rank):
     else:
         next_date = datetime.strptime(upcoming_date, "%Y/%m/%d") + timedelta(days=7)
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
-    return [f"{utils.untuple_str(final_winner)}\n\nwas accepted as winner for the meeting on {upcoming_date}."], False
+    return [f"{utils.untuple_str(final_winner)}\n\nwas accepted as winner for the meeting on {upcoming_date}."], False, None
 
 
 """
@@ -156,24 +156,24 @@ def deny(message):
 """
 
 def show_participation(message):
-    return ["in_claims DB:\n" + str(bot_memory.get_in_claims_table())], False
+    return ["in_claims DB:\n" + str(bot_memory.get_in_claims_table())], False, None
 
 
 def show_marks(message):
-    return ["marks DB:\n" + str(bot_memory.get_marks_table())], False
+    return ["marks DB:\n" + str(bot_memory.get_marks_table())], False, None
 
 
 def show_admins(message):
-    return ["admins DB:\n" + str(bot_memory.get_admins_table())], False
+    return ["admins DB:\n" + str(bot_memory.get_admins_table())], False, None
 
 
 def show_db(message):
-    return [bot_info(message)] + \
-            all_votes(message) + \
-           [show_participation(message),
-            show_marks(message),
-            show_admins(message),
-            ], False
+    return [bot_info(message)[0][0]] + \
+            all_votes(message)[0] + \
+           [show_participation(message)[0][0],
+            show_marks(message)[0][0],
+            show_admins(message)[0][0],
+            ], False, None
 
 def bot_info(message):
     upcoming_date = bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE)
@@ -182,7 +182,7 @@ def bot_info(message):
     return [f"The date of the upcoming meeting: {upcoming_date}.\n" \
            f"We will discuss the paper:\n{paper}\n" \
            f"\n" \
-           f"The date of the next meeting: {next_date}.\n"], False
+           f"The date of the next meeting: {next_date}.\n"], False, None
 
 def meeting_announcment():
     upcoming_date = bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE)
@@ -210,38 +210,38 @@ def new_meeting_announcment():
 def admin_set_upcoming_date(message):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
-    return [f"set {content} as upcoming date"], False
+    return [f"set {content} as upcoming date"], False, None
 
 
 def admin_set_upcoming_paper(message):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
-    return [f"set {content} as upcoming paper"], False
+    return [f"set {content} as upcoming paper"], False, None
 
 
 def set_next(message):
     author, content = prep_author_and_content(message)
     date = datetime.strptime(content, "%Y/%m/%d")
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
-    return [f"set {content} as next date"], False
+    return [f"set {content} as next date"], False, None
 
 
 def set_next_na(message):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
-    return [f"set {content} as next date"], False
+    return [f"set {content} as next date"], False, None
 
 
 def mark_paper(message):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, True)
-    return [f"The paper:\n{content}\nwill not be elected if {author.nick} is not able to attend."], False
+    return [f"The paper:\n{content}\nwill not be elected if {author.nick} is not able to attend."], False, None
 
 
 def unmark_paper(message):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, False)
-    return [f"Removed the marking."], False
+    return [f"Removed the marking."], False, None
 
 def announce_new_meeting(message):
     author, content = prep_author_and_content(message)
@@ -253,19 +253,19 @@ def announce_new_meeting(message):
     date2 = datetime.strptime(date2_string, "%Y/%m/%d")
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=date1_string)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value="N/A")
-    return [f"Announcement in channel: meetings.\n"], False
+    return [f"Announcement in channel: meetings.\n"], False, None
 
 
 def add_admin(message):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=True)
-    return [f"Admin {content} added."], False
+    return [f"Admin {content} added."], False, None
 
 
 def remove_admin(message):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=False)
-    return [f"Admin {content} removed."], False
+    return [f"Admin {content} removed."], False, None
 
 
 responses_dict = {
@@ -330,7 +330,7 @@ def admin_help(message, admin=True):
         if (key[0:5] == "admin") == admin:
             msg += "\n```" + BOT_CHAR + str(key) + "```" + "\t" + responses_dict[key][1] + "\n"
     post_msg = "\nYou can interact with me in a private chat, too."
-    return [help_msg, msg, post_msg], False
+    return [help_msg, msg, post_msg], False, None
 
 
 responses_dict.update({"help": [bot_help, "get a help message."]})
@@ -348,4 +348,4 @@ def handle_responses(message_content, message, is_private):
     response_function = responses_dict.get(command, [default, "default response function"])[0]
     if is_private and response_function in [suggest, set_next, set_next_na, vote, mark_paper]:
         return ["This command is only usable in the paper-suggestions channel."]
-    return response_function(message) # expect list of strings and one bool
+    return response_function(message) # expect list of strings and one bool and maybe channel_id

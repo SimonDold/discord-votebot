@@ -12,7 +12,7 @@ Setup:
    and invite the bot to your discord server.
    Under Settings/Bot you can Reset the Token to get the 'BOT_TOKEN'.
 
-2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel".
+2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel". Remove the permission to send messages for everyone except the bot.
 
 1. Clone this repository.
 
@@ -22,6 +22,7 @@ It should be of the pattern:
         BOT_TOKEN=<your personal bot token>
         ADMIN_ID=<discord user id of you>
         MEETING_CHANNEL_ID=<id of the textchannel called 'meetings'>
+        PAPER_SUGGESTIONS_CHANNEL_ID=<id of the textchannel called 'paper-suggestions'>
 
 1. Navigate into this repository.
 

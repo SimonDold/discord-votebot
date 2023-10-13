@@ -12,6 +12,7 @@ services:
       - BOT_TOKEN=${BOT_TOKEN}
       - ADMIN_ID=${ADMIN_ID}
       - MEETING_CHANNEL_ID=${MEETING_CHANNEL_ID}
+      - PAPER_SUGGESTIONS_CHANNEL_ID=${PAPER_SUGGESTIONS_CHANNEL_ID}
       
 volumes:
   votebot-data:

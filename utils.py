@@ -6,6 +6,8 @@ import os
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_ID = os.environ["ADMIN_ID"]
 MEETING_CHANNEL_ID = os.environ["MEETING_CHANNEL_ID"]
+PAPER_SUGGESTIONS_CHANNEL_ID = os.environ["PAPER_SUGGESTIONS_CHANNEL_ID"]
+
 
 BOT_CHAR = "!"
 
