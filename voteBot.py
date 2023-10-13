@@ -20,9 +20,9 @@ intents = discord.Intents.default()  # Create a default Intents object
 intents.reactions = True  # Enable the reactions intent
 
 
-async def react_message(message, user_message, is_private):
+async def react_message(message, message_content, is_private):
     try:
-        response_list = responses.handle_responses(user_message, message.author, is_private)
+        response_list = responses.handle_responses(message_content, message, is_private)
         for response in response_list:
             offset = 0
             while offset < len(response):
@@ -144,17 +144,17 @@ def run_vote_bot():
     @CLIENT.event
     async def on_message(message):
         username = str(message.author)
-        user_message = str(message.content)
+        message_content = str(message.content)
         channel = message.channel
         if message.author == CLIENT.user:
-            await self_reactions(message, user_message)
+            await self_reactions(message, message_content)
             return
-        elif user_message[0] == BOT_CHAR:
+        elif message_content[0] == BOT_CHAR:
             if isinstance(channel, discord.DMChannel):
-                await react_message(message, user_message, is_private=True)
+                await react_message(message, message_content, is_private=True)
             elif channel.name in ["paper-suggestions", "votebot-channel"]:
-                print(f"{username} said: '{user_message}' (in {channel.name})")
-                await react_message(message, user_message, is_private=False)
+                print(f"{username} said: '{message_content}' (in {channel.name})")
+                await react_message(message, message_content, is_private=False)
 
     @CLIENT.event
     async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
