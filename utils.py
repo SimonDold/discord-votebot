@@ -27,15 +27,13 @@ resubmit_waring = "\n\n(already suggested btw)"
 async def get_winner(client, winner_list=[]):
     paper_suggestion_channel = client.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID))
     meeting_channel = client.get_channel(int(MEETING_CHANNEL_ID))
-    #msg = await discord.utils.get(channel.history(), author__name='Dave')
-    join_claim_message = await discord.utils.get(meeting_channel.history(limit=10), author__id=client.user.id)
-    #join_claim_message = await meeting_channel.history(limit=None).get(lambda m: m.author == client.user)
+    join_claim_message = await discord.utils.get(meeting_channel.history(), author__id=client.user.id)
     best = ["NONE", -math.inf]
     print("collect joiners/skippers")
     joiners = await get_reaction_user_list(join_claim_message, "🇯")
     skippers = await get_reaction_user_list(join_claim_message, "🇸")
     print("iterate history")
-    async for message in paper_suggestion_channel.history(limit=10):
+    async for message in paper_suggestion_channel.history():
         print("collect votes")
         up_voters = await get_reaction_user_list(message, "👍")
         down_voters = await get_reaction_user_list(message, "👎")
