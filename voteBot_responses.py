@@ -150,10 +150,11 @@ async def deny(message, client):
     global winner_list
     print("Lets vote again")
     (vote_winner, vote_info) = await utils.get_winner(client, winner_list)
-    print(f"the new winner is...\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}")
+    content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
+    print(f"the new winner is...\n{utils.untuple_str(content)}\n\n{vote_info}")
     winner_list.append(vote_winner.id)
     print(f"Winner list: {winner_list}")
-    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}"], False, None
+    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}\n\n{vote_info}"], False, None
 
 
 async def show_participation(message, client):
