@@ -116,12 +116,13 @@ def claim_nothing(user_id):
 
 async def vote(message, client):
     global winner_list
+    await message.add_reaction("🤖")
     print("Lets vote")
     (vote_winner, vote_info) = await utils.get_winner(client)
     winner_list.append(vote_winner.id)
     content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
     print(f"winner content: {content}")
-    return [f"Winner is:\n{utils.untuple_str(content)}\n\n{vote_info}"], False, None
+    return [f"Winner is:\n{utils.untuple_str(content)}"], False, None
 
 
 async def accept_by_rank(rank, channel):
@@ -316,7 +317,6 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
            "Reactions:\n" \
            "👍: I am looking forward to discuss this paper.\n" \
            "👎: I want you to discuss this paper without me.\n" \
-           "🤷: undoing your vote.\n" \
            "How can I help you? I know these commands:\n"
 
 

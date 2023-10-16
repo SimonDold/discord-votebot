@@ -73,7 +73,6 @@ def get_winner(winner_list=[]):
 async def self_reactions(message, user_message):
     if "Suggestion:" == user_message.split()[0]:
         await message.add_reaction("👍")
-        await message.add_reaction("🤷")
         await message.add_reaction("👎")
     if user_message.split()[0] == "Winner":
         await message.add_reaction("✅")
@@ -160,6 +159,7 @@ async def unreaction_reaction(message, channel, emoji, user, user_id):
             responses.claim_nothing(user_id)
         elif str(emoji) == "🇸" and bot_memory.get_user_in_claim(user_id) == "out":
             responses.claim_nothing(user_id)
+
 
 
 def run_vote_bot():
