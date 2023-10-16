@@ -222,9 +222,13 @@ def admin_set_upcoming_paper(message, client):
 
 async def set_next(message, client):
     author, content = prep_author_and_content(message)
-    date = datetime.strptime(content, "%Y/%m/%d")
-    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
-    return [f"set {content} as next date"], False, None
+    try:
+        date = datetime.strptime(content, "%Y/%m/%d")
+        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
+        return [f"set {content} as next date"], False, None
+    except Exception as e:
+        await message.add_reaction("❌")
+    return [], False, None
 
 
 async def set_next_na(message, client):
@@ -344,7 +348,7 @@ async def handle_responses(message_content, message, is_private, client):
     words = message_content.split()
     command = words[0].lower()[1::]
     if command[0:5] == "admin" and (author.id,) not in bot_memory.get_admins_table():
-        return ["This command is only for admins."]
+        return ["This command is only for admins."], False, None
     response_function = responses_dict.get(command, [default, "default response function"])[0]
     if is_private and response_function in [suggest, set_next, set_next_na, vote, mark_paper]:
         return ["This command is only usable in the paper-suggestions channel."]
