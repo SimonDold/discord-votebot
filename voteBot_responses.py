@@ -203,21 +203,21 @@ def vote_announcement():
 def new_meeting_announcment():
     global date1_string
     global date2_string
-    return f"For the upcoming meeting on {date1_string} we have the vote on {date2_string}.\n"\
-           "Tell me with 🇯/🇸 reactions whether you will 🇯oin or 🇸kip this upcoming meeting "\
-           "so I can consider your votes accordingly."
+    return f"For the next meeting on {date1_string} we have the vote on {date2_string}."
 
 
 async def admin_set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
-    return [f"set {content} as upcoming date"], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 
 async def admin_set_upcoming_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
-    return [f"set {content} as upcoming paper"], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 
 async def set_next(message, client):
@@ -225,7 +225,8 @@ async def set_next(message, client):
     try:
         date = datetime.strptime(content, "%Y/%m/%d")
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
-        return [f"set {content} as next date"], False, None
+        message.add_reaction("✅")
+        return [], False, None
     except Exception as e:
         await message.add_reaction("❌")
     return [], False, None
@@ -234,7 +235,8 @@ async def set_next(message, client):
 async def set_next_na(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
-    return [f"set {content} as next date"], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 
 async def mark_paper(message, client):
@@ -246,31 +248,38 @@ async def mark_paper(message, client):
 async def unmark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, False)
-    return [f"Removed the marking."], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 async def announce_new_meeting(message, client):
     author, content = prep_author_and_content(message)
     global date1_string
     global date2_string
-    date1_string = content.split()[0]
-    date1 = datetime.strptime(date1_string, "%Y/%m/%d")
-    date2_string = content.split()[1]
-    date2 = datetime.strptime(date2_string, "%Y/%m/%d")
-    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=date1_string)
-    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value="N/A")
-    return [f"Announcement in channel: meetings.\n"], False, None
+    try:
+        date1_string = content.split()[0]
+        date1 = datetime.strptime(date1_string, "%Y/%m/%d")
+        date2_string = content.split()[1]
+        date2 = datetime.strptime(date2_string, "%Y/%m/%d")
+        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=date1_string)
+        bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value="N/A")
+        return [new_meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
+    except Exception as e:
+        await message.add_reaction("❌")
+    return [], False, None
 
 
 async def add_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=True)
-    return [f"Admin {content} added."], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 
 async def remove_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=False)
-    return [f"Admin {content} removed."], False, None
+    message.add_reaction("✅")
+    return [], False, None
 
 async def admin_announce_meeting(message, client):
     return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
@@ -287,9 +296,9 @@ responses_dict = {
                          "to suggest this paper for a future meeting.\n"
                          "no need to follow a specific format."],
     #"show_suggestions": [suggestions, "lists all the collected suggestions"],
-    "my_votes": [my_votes, "list my votes for all the suggestions"],
+    #"my_votes": [my_votes, "list my votes for all the suggestions"],
     "next": [set_next, f"set a date for the next meeting with the format %Y/%m/%d"],
-    "next_NA": [set_next_na, f"set the date of the next meeting to N/A"],
+    "next_na": [set_next_na, f"set the date of the next meeting to N/A"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
     "v": [vote, f"shorthand for {BOT_CHAR}vote"],
     "mark_paper": [mark_paper, f"mark a paper with '{BOT_CHAR}mark_paper [string]' "

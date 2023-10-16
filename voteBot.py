@@ -80,8 +80,6 @@ async def self_reactions(message, user_message):
     if user_message.split()[0:7] == "----------------------------------------- The date of the next meeting:".split():
         await message.add_reaction("🇯")
         await message.add_reaction("🇸")
-    if user_message.split()[0] == "Announcement":
-        await announce_new_meeting()
 
 
 async def send_message_in_channel(message, channel):
