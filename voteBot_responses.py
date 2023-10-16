@@ -210,14 +210,14 @@ def new_meeting_announcment():
 async def admin_set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 
 async def admin_set_upcoming_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 
@@ -226,7 +226,7 @@ async def set_next(message, client):
     try:
         date = datetime.strptime(content, "%Y/%m/%d")
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
-        message.add_reaction("✅")
+        await message.add_reaction("✅")
         return [], False, None
     except Exception as e:
         await message.add_reaction("❌")
@@ -236,7 +236,7 @@ async def set_next(message, client):
 async def set_next_na(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 
@@ -249,7 +249,7 @@ async def mark_paper(message, client):
 async def unmark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, False)
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 async def announce_new_meeting(message, client):
@@ -272,14 +272,14 @@ async def announce_new_meeting(message, client):
 async def add_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=True)
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 
 async def remove_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=False)
-    message.add_reaction("✅")
+    await message.add_reaction("✅")
     return [], False, None
 
 async def admin_announce_meeting(message, client):
