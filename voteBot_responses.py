@@ -161,7 +161,7 @@ async def deny(message, client):
     print(f"the new winner is...\n{utils.untuple_str(content)}\n\n{vote_info}")
     winner_list.append(vote_winner.id)
     print(f"Winner list: {winner_list}")
-    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}\n\n{vote_info}"], False, None
+    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}"], False, None
 
 
 async def show_participation(message, client):
