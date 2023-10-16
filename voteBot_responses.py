@@ -1,5 +1,3 @@
-import random
-
 import bot_memory
 import utils
 from utils import BOT_CHAR
@@ -43,75 +41,16 @@ def suggestion_key_to_txt(key):
 
 async def suggest(message, client):
     author, content = prep_author_and_content(message)
-    msg = ""
     print(f"content: {content}")
     key = tuple(utils.remove_empty_lines(content))
     print(f"key: {key}")
     print(f"author: {author}, ID: {author.id}")
-    paper = utils.untuple_str(key)
-    if paper in bot_memory.get_papers():
-        msg += utils.resubmit_waring
-    msg = f"Suggestion:\n{suggestion_key_to_txt(key)}" + msg
+    msg = f"Suggestion:\n{suggestion_key_to_txt(key)}"
     return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
-async def remove(message, client):
-    author, content = prep_author_and_content(message)
-    print("unsuggesting")
-    msg = ""
-    print(f"content: {content}")
-    key = tuple(utils.remove_empty_lines(content))
-    print(f"key: {key}")
-    paper = utils.untuple_str(key)
-    print(f"paper:{paper}")
-    if paper in bot_memory.get_papers():
-        msg += "was removed"
-
-    msg = f"\n{suggestion_key_to_txt(key)}" + msg
-    bot_memory.remove_suggestions(paper)
-    return [msg], False, None
 
 
-async def remove_user(message, client):
-    author, content = prep_author_and_content(message)
-    bot_memory.remove_user(content)
-    return ["removed " + content], False, None
-
-
-async def suggestions(message, client):
-    author, content = prep_author_and_content(message)
-    lst = []
-    for suggestion in bot_memory.get_papers():
-        lst.append("Suggestion:\n" + utils.untuple_str(suggestion) + "\n\n")
-    if len(lst) == 0:
-        lst = ["There are no suggestions at the moment. Add one with !suggest [string]."]
-    return lst, False, None
-
-
-async def my_votes(message, client):
-    author, content = prep_author_and_content(message)
-    return bot_memory.get_user_votes_table(author.id), False, None
-
-
-async def all_votes(message, client):
-    author, content = prep_author_and_content(message)
-    msgs = ["ALL VOTES:"]
-    for m in bot_memory.get_suggestions_table():
-        msgs += [str(m)]
-    return msgs, False, None
-
-
-def claim_in(user_id):
-    bot_memory.update_in_claims(user_id, "in")
-    return
-
-def claim_out(user_id):
-    bot_memory.update_in_claims(user_id, "out")
-    return
-
-def claim_nothing(user_id):
-    bot_memory.update_in_claims(user_id, "uk")
-    return
 
 async def vote(message, client):
     global winner_list
@@ -159,11 +98,6 @@ async def deny(message, client):
     print(f"Winner list: {winner_list}")
     return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}"], False, None
 
-
-async def show_participation(message, client):
-    return ["in_claims DB:\n" + str(bot_memory.get_in_claims_table())], False, None
-
-
 async def show_marks(message, client):
     return ["marks DB:\n" + str(bot_memory.get_marks_table())], False, None
 
@@ -175,14 +109,11 @@ async def show_admins(message, client):
 async def show_db(message, client):
 
     bi = await bot_info(message, client)
-    aw = await all_votes(message, client)
-    sp = await show_participation(message, client)
     sm = await show_marks(message, client)
     sa = await show_admins(message, client)
 
     return [bi[0][0]] + \
-            aw[0] + \
-           [sp[0][0],
+           [
             sm[0][0],
             sa[0][0],
             ], False, None
@@ -309,8 +240,6 @@ responses_dict = {
                          "https://www.ida.liu.se/divisions/aiics/publications/ECP-2001-Heuristic-Planning-Time.pdf``` "
                          "to suggest this paper for a future meeting.\n"
                          "no need to follow a specific format."],
-    #"show_suggestions": [suggestions, "lists all the collected suggestions"],
-    #"my_votes": [my_votes, "list my votes for all the suggestions"],
     "next": [set_next, f"set a date for the next meeting with the format %Y/%m/%d"],
     "next_na": [set_next_na, f"set the date of the next meeting to N/A"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
@@ -326,13 +255,8 @@ responses_dict = {
     "admin_add_admin": [add_admin, f"add an admin with '{BOT_CHAR}admin_add_admin [user_ID]'"],
     "admin_remove_admin": [remove_admin, f"remove an admin with '{BOT_CHAR}admin_remove_admin [user_ID]'"],
     "admin_show_admins": [show_admins, f"list all admins"],
-    "admin_all_votes": [all_votes, "List all votes from all suggestions and all users"],
-    "admin_show_participation": [show_participation, "show all join/skip claims"],
-    "admin_sp": [show_participation, f"shorthand for {BOT_CHAR}show_participation"],
     "admin_hi": [greet, f"greeting each other"],
     "admin_version": [version, f"check the version"],
-    "admin_remove_suggestion": [remove, f"'{BOT_CHAR}remove [string]' to remove a suggestion"],
-    "admin_remove_user": [remove_user, f"remove user from suggestions and in_claims"],
     "admin_set_upcoming_date": [admin_set_upcoming_date, f"set the upcoming date for the meeting"],
     "admin_set_upcoming_paper": [admin_set_upcoming_paper, f"set the upcoming paper for the meeting"],
     "admin_announce_meeting": [admin_announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
