@@ -49,13 +49,9 @@ async def suggest(message, client):
     print(f"key: {key}")
     print(f"author: {author}, ID: {author.id}")
     paper = utils.untuple_str(key)
-    print("XXX")
     if paper in bot_memory.get_papers():
-        print("YYY")
         msg += utils.resubmit_waring
-    print("ZZZ")
     msg = f"Suggestion:\n{suggestion_key_to_txt(key)}" + msg
-    print("AAA")
     return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
