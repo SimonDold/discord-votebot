@@ -173,11 +173,18 @@ async def show_admins(message, client):
 
 
 async def show_db(message, client):
-    return [bot_info(message)[0][0]] + \
-            all_votes(message)[0] + \
-           [show_participation(message)[0][0],
-            show_marks(message)[0][0],
-            show_admins(message)[0][0],
+
+    bi = await bot_info(message, client)
+    aw = await all_votes(message, client)
+    sp = await show_participation(message, client)
+    sm = await show_marks(message, client)
+    sa = await show_admins(message, client)
+
+    return [bi[0][0]] + \
+            aw[0] + \
+           [sp[0][0],
+            sm[0][0],
+            sa[0][0],
             ], False, None
 
 async def bot_info(message, client):
