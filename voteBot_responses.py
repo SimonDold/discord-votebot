@@ -208,13 +208,13 @@ def new_meeting_announcment():
            "so I can consider your votes accordingly."
 
 
-def admin_set_upcoming_date(message, client):
+async def admin_set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
     return [f"set {content} as upcoming date"], False, None
 
 
-def admin_set_upcoming_paper(message, client):
+async def admin_set_upcoming_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
     return [f"set {content} as upcoming paper"], False, None
@@ -272,6 +272,9 @@ async def remove_admin(message, client):
     bot_memory.update_admins(content, add=False)
     return [f"Admin {content} removed."], False, None
 
+async def admin_announce_meeting(message, client):
+    return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
+
 
 responses_dict = {
     "info": [bot_info, f"I tell you this weeks paper, meeting date "
@@ -283,7 +286,7 @@ responses_dict = {
                          "https://www.ida.liu.se/divisions/aiics/publications/ECP-2001-Heuristic-Planning-Time.pdf``` "
                          "to suggest this paper for a future meeting.\n"
                          "no need to follow a specific format."],
-    "show_suggestions": [suggestions, "lists all the collected suggestions"],
+    #"show_suggestions": [suggestions, "lists all the collected suggestions"],
     "my_votes": [my_votes, "list my votes for all the suggestions"],
     "next": [set_next, f"set a date for the next meeting with the format %Y/%m/%d"],
     "next_NA": [set_next_na, f"set the date of the next meeting to N/A"],
@@ -309,6 +312,7 @@ responses_dict = {
     "admin_remove_user": [remove_user, f"remove user from suggestions and in_claims"],
     "admin_set_upcoming_date": [admin_set_upcoming_date, f"set the upcoming date for the meeting"],
     "admin_set_upcoming_paper": [admin_set_upcoming_paper, f"set the upcoming paper for the meeting"],
+    "admin_announce_meeting": [admin_announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
     "admin_show_marks": [show_marks, f"show all marks"],
     "admin_show_db": [show_db, f"show all tables from the DB"]
 
@@ -351,5 +355,5 @@ async def handle_responses(message_content, message, is_private, client):
         return ["This command is only for admins."], False, None
     response_function = responses_dict.get(command, [default, "default response function"])[0]
     if is_private and response_function in [suggest, set_next, set_next_na, vote, mark_paper]:
-        return ["This command is only usable in the paper-suggestions channel."]
+        return ["This command is only usable in the public channels."]
     return await response_function(message, client) # expect list of strings and one bool and maybe channel_id
