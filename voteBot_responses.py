@@ -19,16 +19,16 @@ def prep_author_and_content(message):
     content = message.content[len(command) + 2::]
     return author, content
 
-def default(message, client):
-    return ["unknown command. Try !help"], False
+async def default(message, client):
+    return ["unknown command. Try !help"], False, None
 
 
-def greet(message, client):
+async def greet(message, client):
     author, _ =prep_author_and_content(message)
-    return [f"""beep beep boop {author.id} (this is bot language for "hello {author.nick}.")"""], False
+    return [f"""beep beep boop {author.id} (this is bot language for "hello {author.nick}.")"""], False, None
 
-def version(message, client):
-    return [f"""VoteBot Version: {VERSION}."""], False
+async def version(message, client):
+    return [f"""VoteBot Version: {VERSION}."""], False, None
 
 
 def suggestion_key_to_txt(key):
@@ -38,7 +38,7 @@ def suggestion_key_to_txt(key):
     return msg
 
 
-def suggest(message, client):
+async def suggest(message, client):
     author, content = prep_author_and_content(message)
     msg = ""
     print(f"content: {content}")
@@ -46,15 +46,17 @@ def suggest(message, client):
     print(f"key: {key}")
     print(f"author: {author}, ID: {author.id}")
     paper = utils.untuple_str(key)
+    print("XXX")
     if paper in bot_memory.get_papers():
+        print("YYY")
         msg += utils.resubmit_waring
-
+    print("ZZZ")
     msg = f"Suggestion:\n{suggestion_key_to_txt(key)}" + msg
-    bot_memory.update_suggestions(paper, author.id, "👍")
+    print("AAA")
     return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
-def remove(message, client):
+async def remove(message, client):
     author, content = prep_author_and_content(message)
     print("unsuggesting")
     msg = ""
@@ -71,13 +73,13 @@ def remove(message, client):
     return [msg], False, None
 
 
-def remove_user(message, client):
+async def remove_user(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.remove_user(content)
     return ["removed " + content], False, None
 
 
-def suggestions(message, client):
+async def suggestions(message, client):
     author, content = prep_author_and_content(message)
     lst = []
     for suggestion in bot_memory.get_papers():
@@ -87,12 +89,12 @@ def suggestions(message, client):
     return lst, False, None
 
 
-def my_votes(message, client):
+async def my_votes(message, client):
     author, content = prep_author_and_content(message)
     return bot_memory.get_user_votes_table(author.id), False, None
 
 
-def all_votes(message, client):
+async def all_votes(message, client):
     author, content = prep_author_and_content(message)
     msgs = ["ALL VOTES:"]
     for m in bot_memory.get_suggestions_table():
@@ -116,9 +118,10 @@ async def vote(message, client):
     global winner_list
     print("Lets vote")
     (vote_winner, vote_info) = await utils.get_winner(client)
-    print(f"the winner is...\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}")
     winner_list.append(vote_winner.id)
-    return [f"Winner is:\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}"], False, None
+    content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
+    print(f"winner content: {content}")
+    return [f"Winner is:\n{utils.untuple_str(content)}\n\n{vote_info}"], False, None
 
 
 async def accept_by_rank(rank, channel):
@@ -152,19 +155,19 @@ async def deny(message, client):
     return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}"], False, None
 
 
-def show_participation(message, client):
+async def show_participation(message, client):
     return ["in_claims DB:\n" + str(bot_memory.get_in_claims_table())], False, None
 
 
-def show_marks(message, client):
+async def show_marks(message, client):
     return ["marks DB:\n" + str(bot_memory.get_marks_table())], False, None
 
 
-def show_admins(message, client):
+async def show_admins(message, client):
     return ["admins DB:\n" + str(bot_memory.get_admins_table())], False, None
 
 
-def show_db(message, client):
+async def show_db(message, client):
     return [bot_info(message)[0][0]] + \
             all_votes(message)[0] + \
            [show_participation(message)[0][0],
@@ -172,7 +175,7 @@ def show_db(message, client):
             show_admins(message)[0][0],
             ], False, None
 
-def bot_info(message, client):
+async def bot_info(message, client):
     upcoming_date = bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE)
     paper = bot_memory.get_info(info_key=bot_memory.UPCOMING_PAPER)
     next_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
@@ -216,31 +219,31 @@ def admin_set_upcoming_paper(message, client):
     return [f"set {content} as upcoming paper"], False, None
 
 
-def set_next(message, client):
+async def set_next(message, client):
     author, content = prep_author_and_content(message)
     date = datetime.strptime(content, "%Y/%m/%d")
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
     return [f"set {content} as next date"], False, None
 
 
-def set_next_na(message, client):
+async def set_next_na(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
     return [f"set {content} as next date"], False, None
 
 
-def mark_paper(message, client):
+async def mark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, True)
     return [f"The paper:\n{content}\nwill not be elected if {author.nick} is not able to attend."], False, None
 
 
-def unmark_paper(message, client):
+async def unmark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, False)
     return [f"Removed the marking."], False, None
 
-def announce_new_meeting(message, client):
+async def announce_new_meeting(message, client):
     author, content = prep_author_and_content(message)
     global date1_string
     global date2_string
@@ -253,13 +256,13 @@ def announce_new_meeting(message, client):
     return [f"Announcement in channel: meetings.\n"], False, None
 
 
-def add_admin(message, client):
+async def add_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=True)
     return [f"Admin {content} added."], False, None
 
 
-def remove_admin(message, client):
+async def remove_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=False)
     return [f"Admin {content} removed."], False, None
@@ -317,11 +320,11 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
            "How can I help you? I know these commands:\n"
 
 
-def bot_help(message, client):
+async def bot_help(message, client):
     return admin_help(message, admin=False)
 
 
-def admin_help(message, client, admin=True):
+async def admin_help(message, client, admin=True):
     msg = ""
     for key in responses_dict:
         if (key[0:5] == "admin") == admin:
