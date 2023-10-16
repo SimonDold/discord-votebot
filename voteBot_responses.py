@@ -25,7 +25,10 @@ async def default(message, client):
 
 async def greet(message, client):
     author, _ =prep_author_and_content(message)
-    return [f"""beep beep boop {author.id} (this is bot language for "hello {author.nick}.")"""], False, None
+    nick = author.nick
+    if nick is None:
+        nick = author.name
+    return [f"""beep beep boop {author.id} (this is bot language for "hello {nick}.")"""], False, None
 
 async def version(message, client):
     return [f"""VoteBot Version: {VERSION}."""], False, None
@@ -243,7 +246,10 @@ async def set_next_na(message, client):
 async def mark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, True)
-    return [f"The paper:\n{content}\nwill not be elected if {author.nick} is not able to attend."], False, None
+    nick = author.nick
+    if nick is None:
+        nick = author.name
+    return [f"The paper:\n{content}\nwill not be elected if {nick} is not able to attend."], False, None
 
 
 async def unmark_paper(message, client):
