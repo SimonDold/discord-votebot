@@ -1,3 +1,5 @@
+import discord
+
 import bot_memory
 
 import math
@@ -17,8 +19,53 @@ W_OUT_UP = -0.001
 W_IN_DOWN = -1
 W_UK_DOWN = 0
 W_OUT_DOWN = 0
+W_OUT_MARKED = -1000
 
 resubmit_waring = "\n\n(already suggested btw)"
+
+
+async def get_winner(client, winner_list=[]):
+    paper_suggestion_channel = client.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID))
+    meeting_channel = client.get_channel(int(MEETING_CHANNEL_ID))
+    #msg = await discord.utils.get(channel.history(), author__name='Dave')
+    join_claim_message = await discord.utils.get(meeting_channel.history(limit=10), author__id=client.user.id)
+    #join_claim_message = await meeting_channel.history(limit=None).get(lambda m: m.author == client.user)
+    best = ["NONE", -math.inf]
+    print("collect joiners/skippers")
+    joiners = await get_reaction_user_list(join_claim_message, "🇯")
+    skippers = await get_reaction_user_list(join_claim_message, "🇸")
+    print("iterate history")
+    async for message in paper_suggestion_channel.history(limit=10):
+        print("collect votes")
+        up_voters = await get_reaction_user_list(message, "👍")
+        down_voters = await get_reaction_user_list(message, "👎")
+        vote_value = 0
+        print("iterate voters")
+        for up_voter in up_voters:
+            if up_voter in joiners:
+                vote_value += W_IN_UP
+            if up_voter in skippers:
+                vote_value += W_OUT_UP
+            if up_voter not in joiners and up_voters not in skippers:
+                vote_value += W_UK_UP
+        for down_voter in down_voters:
+            if down_voter in joiners:
+                vote_value += W_IN_DOWN
+            if down_voter in skippers:
+                vote_value += W_OUT_DOWN
+            if down_voter not in joiners and up_voters not in skippers:
+                vote_value += W_UK_DOWN
+        print("done iterating voters")
+        out_marked = bot_memory.count_mark_conflicts(message.content)
+        vote_value += out_marked * W_OUT_MARKED
+        print("check new best")
+        if vote_value > best[1] and (not message.id in winner_list):
+            print("new best found")
+            best = [message, vote_value]
+            print("assign new best")
+    print("winner found")
+    print(f"winner found {best[0]} {best[1]}")
+    return (best[0], best[1])
 
 
 def untuple_str(tup):
@@ -26,6 +73,15 @@ def untuple_str(tup):
     for t in tup:
         msg += t
     return msg
+
+async def get_reaction_user_list(message, emoji):
+    users_with_reaction = []
+    for reaction in message.reactions:
+        if str(reaction) == emoji:
+            async for user in reaction.users():
+                users_with_reaction.append(user)
+    return users_with_reaction
+
 
 
 def get_vote_value(key):
@@ -55,27 +111,6 @@ def get_vote_value(key):
     return value, vote_info
     # \n👎:+{in_down},-{out_down},?{uk_down}"
 
-
-def get_winner(winner_list=[]):
-    print("who is the winner?")
-    best = ["NONE", -math.inf, ""]
-    papers = bot_memory.get_papers()
-    print(f"candidate papers:\n{papers}")
-    for packed_paper in papers:
-        (paper,) = packed_paper
-        print(f"checking suggestion: {paper}")
-        value, vote_info = get_vote_value(paper)
-        print(f"done checking suggestion: {paper}")
-        print(f"value:{value}\nbest:{best}")
-        if value > best[1] and (not paper in winner_list):
-            best = [paper, value, vote_info]
-
-            print(f"new best: {best}")
-        else:
-            print("no new best")
-    print("i know the winner now")
-    winner, _, vote_info = best
-    return winner, vote_info
 
 
 def remove_empty_lines(s):  # from chatGPT 3

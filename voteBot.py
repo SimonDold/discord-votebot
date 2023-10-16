@@ -1,9 +1,11 @@
+import math
+
 import discord
 import voteBot_responses as responses
 import utils
 import bot_memory
 
-from utils import BOT_CHAR, BOT_TOKEN, ADMIN_ID, MEETING_CHANNEL_ID
+from utils import BOT_CHAR, BOT_TOKEN, ADMIN_ID, MEETING_CHANNEL_ID, PAPER_SUGGESTIONS_CHANNEL_ID
 
 CLIENT = None
 
@@ -22,7 +24,7 @@ intents.reactions = True  # Enable the reactions intent
 
 async def react_message(message, message_content, is_private):
     try:
-        response_list, delete, channel_id = responses.handle_responses(message_content, message, is_private)
+        response_list, delete, channel_id = await responses.handle_responses(message_content, message, is_private, CLIENT)
         if channel_id is None:
             channel_id = message.channel.id
         for response in response_list:
@@ -35,6 +37,37 @@ async def react_message(message, message_content, is_private):
             await message.delete()
     except Exception as e:
         print(e)
+
+
+def get_winner(winner_list=[]):
+    paper_suggestion_channel = CLIENT.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID))
+    meeting_channel = CLIENT.get_channel(int(MEETING_CHANNEL_ID))
+    best = ["NONE", -math.inf]
+    for message in paper_suggestion_channel.history(limit=None):
+        up_voters = utils.get_reaction_user_list(message, "👍")
+        down_voters = utils.get_reaction_user_list(message, "👎")
+        joiners = utils.get_reaction_user_list(meeting_channel, "🇯")
+        skippers = utils.get_reaction_user_list(meeting_channel, "🇸")
+        vote_value = 0
+        for up_voter in up_voters:
+            if up_voter in joiners:
+                vote_value += utils.W_IN_UP
+            if up_voter in skippers:
+                vote_value += utils.W_IN_DOWN
+            if up_voter not in joiners and up_voters not in skippers:
+                vote_value += utils.W_UK_UP
+        for down_voter in down_voters:
+            if down_voter in joiners:
+                vote_value += utils.W_OUT_UP
+            if down_voter in skippers:
+                vote_value += utils.W_OUT_DOWN
+            if down_voter not in joiners and up_voters not in skippers:
+                vote_value += utils.W_UK_DOWN
+        out_marked = bot_memory.count_mark_conflicts(message.content)
+        vote_value += out_marked * utils.W_OUT_MARKED
+        if vote_value > best[1] and (not message in winner_list):
+            best = [message, vote_value]
+    return best[0], best[1]
 
 
 async def self_reactions(message, user_message):
@@ -81,12 +114,6 @@ async def announce_new_meeting():
 
 async def reaction_reaction(message, channel, emoji, user, user_id):
     if "Suggestion:" == message.content.split()[0]:
-        if isinstance(channel, discord.TextChannel):
-            # Remove the reaction
-            await message.remove_reaction(emoji, user)
-        else:
-            print("Cannot remove reaction in a DM channel.")
-
             # normalize
         message_content = message.content
         while message_content[len(message_content) - len(utils.resubmit_waring):] == utils.resubmit_waring:
@@ -103,12 +130,12 @@ async def reaction_reaction(message, channel, emoji, user, user_id):
             winner_rank = 1
             if not message.content.split()[1] == "is:":  # if not the very first winner
                 winner_rank = int(message.content.split()[1][1:])
-            responses.accept_by_rank(winner_rank)
+            await responses.accept_by_rank(winner_rank, CLIENT.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID)))
             print("accepted :)")
             await announce_meeting()
         elif str(emoji) == "⏩":
             print("denied by reaction")
-            new_winner_message = responses.deny(None, None)
+            [new_winner_message], _, _ = await responses.deny(None, CLIENT)
             await send_message_in_channel(new_winner_message, channel)
         else:
             print(f"unexpected emoji: {emoji}")

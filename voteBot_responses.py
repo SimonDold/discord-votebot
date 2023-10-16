@@ -19,15 +19,15 @@ def prep_author_and_content(message):
     content = message.content[len(command) + 2::]
     return author, content
 
-def default(message):
+def default(message, client):
     return ["unknown command. Try !help"], False
 
 
-def greet(message):
+def greet(message, client):
     author, _ =prep_author_and_content(message)
     return [f"""beep beep boop {author.id} (this is bot language for "hello {author.nick}.")"""], False
 
-def version(message):
+def version(message, client):
     return [f"""VoteBot Version: {VERSION}."""], False
 
 
@@ -38,7 +38,7 @@ def suggestion_key_to_txt(key):
     return msg
 
 
-def suggest(message):
+def suggest(message, client):
     author, content = prep_author_and_content(message)
     msg = ""
     print(f"content: {content}")
@@ -54,7 +54,7 @@ def suggest(message):
     return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
-def remove(message):
+def remove(message, client):
     author, content = prep_author_and_content(message)
     print("unsuggesting")
     msg = ""
@@ -71,13 +71,13 @@ def remove(message):
     return [msg], False, None
 
 
-def remove_user(message):
+def remove_user(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.remove_user(content)
     return ["removed " + content], False, None
 
 
-def suggestions(message):
+def suggestions(message, client):
     author, content = prep_author_and_content(message)
     lst = []
     for suggestion in bot_memory.get_papers():
@@ -87,12 +87,12 @@ def suggestions(message):
     return lst, False, None
 
 
-def my_votes(message):
+def my_votes(message, client):
     author, content = prep_author_and_content(message)
     return bot_memory.get_user_votes_table(author.id), False, None
 
 
-def all_votes(message):
+def all_votes(message, client):
     author, content = prep_author_and_content(message)
     msgs = ["ALL VOTES:"]
     for m in bot_memory.get_suggestions_table():
@@ -112,62 +112,59 @@ def claim_nothing(user_id):
     bot_memory.update_in_claims(user_id, "uk")
     return
 
-def vote(message):
+async def vote(message, client):
     global winner_list
     print("Lets vote")
-    vote_winner, vote_info = utils.get_winner()
-    print(f"the winner is...\n{utils.untuple_str(vote_winner)}\n\n{vote_info}")
-    winner_list.append(vote_winner)
-    return [f"Winner is:\n{utils.untuple_str(vote_winner)}\n\n{vote_info}"], False, None
+    (vote_winner, vote_info) = await utils.get_winner(client)
+    print(f"the winner is...\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}")
+    winner_list.append(vote_winner.id)
+    return [f"Winner is:\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}"], False, None
 
 
-def accept_by_rank(rank):
+async def accept_by_rank(rank, channel):
     global winner_list
     final_winner = winner_list[rank-1]
+    final_winner_message = await channel.fetch_message(final_winner)
+    final_content = final_winner_message.content
     winner_list = []
-    bot_memory.remove_suggestions(utils.untuple_str(final_winner))
-    bot_memory.purge_in_claims()
+    await final_winner_message.delete()
     upcoming_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
     print(f"extracted previously next_date, now upcoming_date: {upcoming_date}")
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=upcoming_date)
-    bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=final_winner)
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=final_content)
     print(f"change date")
     if upcoming_date == "N/A":
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
     else:
         next_date = datetime.strptime(upcoming_date, "%Y/%m/%d") + timedelta(days=7)
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
-    return [f"{utils.untuple_str(final_winner)}\n\nwas accepted as winner for the meeting on {upcoming_date}."], False, None
+    print("done accept_by_rank")
+    return [f"{utils.untuple_str(final_content)}\n\nwas accepted as winner for the meeting on {upcoming_date}."], False, None
 
 
-"""
-def accept(message):
+async def deny(message, client):
     global winner_list
-    return accept_by_rank(len(winner_list)), False
-
-
-def deny(message):
-    global winner_list
-    vote_winner, vote_info = utils.get_winner(winner_list)
-    print(f"the new winner is...\n{utils.untuple_str(vote_winner)}\n\n{vote_info}")
-    winner_list.append(vote_winner)
+    print("Lets vote again")
+    (vote_winner, vote_info) = await utils.get_winner(client, winner_list)
+    print(f"the new winner is...\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}")
+    winner_list.append(vote_winner.id)
     print(f"Winner list: {winner_list}")
-    return f"Winner #{len(winner_list)} is:\n{utils.untuple_str(vote_winner)}\n\n{vote_info}", False
-"""
+    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(vote_winner.content)}\n\n{vote_info}"], False, None
 
-def show_participation(message):
+
+def show_participation(message, client):
     return ["in_claims DB:\n" + str(bot_memory.get_in_claims_table())], False, None
 
 
-def show_marks(message):
+def show_marks(message, client):
     return ["marks DB:\n" + str(bot_memory.get_marks_table())], False, None
 
 
-def show_admins(message):
+def show_admins(message, client):
     return ["admins DB:\n" + str(bot_memory.get_admins_table())], False, None
 
 
-def show_db(message):
+def show_db(message, client):
     return [bot_info(message)[0][0]] + \
             all_votes(message)[0] + \
            [show_participation(message)[0][0],
@@ -175,7 +172,7 @@ def show_db(message):
             show_admins(message)[0][0],
             ], False, None
 
-def bot_info(message):
+def bot_info(message, client):
     upcoming_date = bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE)
     paper = bot_memory.get_info(info_key=bot_memory.UPCOMING_PAPER)
     next_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
@@ -207,43 +204,43 @@ def new_meeting_announcment():
            "so I can consider your votes accordingly."
 
 
-def admin_set_upcoming_date(message):
+def admin_set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
     return [f"set {content} as upcoming date"], False, None
 
 
-def admin_set_upcoming_paper(message):
+def admin_set_upcoming_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
     return [f"set {content} as upcoming paper"], False, None
 
 
-def set_next(message):
+def set_next(message, client):
     author, content = prep_author_and_content(message)
     date = datetime.strptime(content, "%Y/%m/%d")
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
     return [f"set {content} as next date"], False, None
 
 
-def set_next_na(message):
+def set_next_na(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
     return [f"set {content} as next date"], False, None
 
 
-def mark_paper(message):
+def mark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, True)
     return [f"The paper:\n{content}\nwill not be elected if {author.nick} is not able to attend."], False, None
 
 
-def unmark_paper(message):
+def unmark_paper(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_marks(content, author.id, False)
     return [f"Removed the marking."], False, None
 
-def announce_new_meeting(message):
+def announce_new_meeting(message, client):
     author, content = prep_author_and_content(message)
     global date1_string
     global date2_string
@@ -256,13 +253,13 @@ def announce_new_meeting(message):
     return [f"Announcement in channel: meetings.\n"], False, None
 
 
-def add_admin(message):
+def add_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=True)
     return [f"Admin {content} added."], False, None
 
 
-def remove_admin(message):
+def remove_admin(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.update_admins(content, add=False)
     return [f"Admin {content} removed."], False, None
@@ -320,11 +317,11 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
            "How can I help you? I know these commands:\n"
 
 
-def bot_help(message):
+def bot_help(message, client):
     return admin_help(message, admin=False)
 
 
-def admin_help(message, admin=True):
+def admin_help(message, client, admin=True):
     msg = ""
     for key in responses_dict:
         if (key[0:5] == "admin") == admin:
@@ -337,7 +334,7 @@ responses_dict.update({"help": [bot_help, "get a help message."]})
 responses_dict.update({"admin_help": [admin_help, "get a help message for admins."]})
 
 
-def handle_responses(message_content, message, is_private):
+async def handle_responses(message_content, message, is_private, client):
     author = message.author
     if not message_content[0] == BOT_CHAR:
         return []
@@ -348,4 +345,4 @@ def handle_responses(message_content, message, is_private):
     response_function = responses_dict.get(command, [default, "default response function"])[0]
     if is_private and response_function in [suggest, set_next, set_next_na, vote, mark_paper]:
         return ["This command is only usable in the paper-suggestions channel."]
-    return response_function(message) # expect list of strings and one bool and maybe channel_id
+    return await response_function(message, client) # expect list of strings and one bool and maybe channel_id
