@@ -28,6 +28,14 @@ def get_user_in_claim(user):
         [(r,)] = cursor.fetchall()
         return r
 
+
+def get_marking_users(paper):
+    with conn:
+        query = "SELECT user FROM marks WHERE paper = ?"
+        cursor.execute(query, (paper,))
+        return cursor.fetchall()
+
+
 def get_user_votes_table(user):
     with conn:
         query = "SELECT * FROM suggestions WHERE user = ?"

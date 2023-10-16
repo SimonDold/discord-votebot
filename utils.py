@@ -28,7 +28,7 @@ async def get_winner(client, winner_list=[]):
     paper_suggestion_channel = client.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID))
     meeting_channel = client.get_channel(int(MEETING_CHANNEL_ID))
     join_claim_message = await discord.utils.get(meeting_channel.history(), author__id=client.user.id)
-    best = ["NONE", -math.inf]
+    best = [None, -math.inf]
     print("collect joiners/skippers")
     joiners = await get_reaction_user_list(join_claim_message, "🇯")
     skippers = await get_reaction_user_list(join_claim_message, "🇸")
@@ -37,6 +37,10 @@ async def get_winner(client, winner_list=[]):
         print("collect votes")
         up_voters = await get_reaction_user_list(message, "👍")
         down_voters = await get_reaction_user_list(message, "👎")
+        content = message.content.partition("Suggestion:")[-1][1::]  # remove first word
+        markers = bot_memory.get_marking_users(content)
+        if not markers == []:
+            [markers] = markers
         vote_value = 0
         print("iterate voters")
         for up_voter in up_voters:
@@ -53,10 +57,11 @@ async def get_winner(client, winner_list=[]):
                 vote_value += W_OUT_DOWN
             if down_voter not in joiners and up_voters not in skippers:
                 vote_value += W_UK_DOWN
-        print("done iterating voters")
-        out_marked = bot_memory.count_mark_conflicts(message.content)
-        vote_value += out_marked * W_OUT_MARKED
-        print("check new best")
+        for marker in markers:
+            print(f"marker: {marker}, skippers: {skippers}")
+            if marker in skippers:
+                vote_value += W_OUT_MARKED
+        print("check if new best")
         if vote_value > best[1] and (not message.id in winner_list):
             print("new best found")
             best = [message, vote_value]
@@ -77,7 +82,7 @@ async def get_reaction_user_list(message, emoji):
     for reaction in message.reactions:
         if str(reaction) == emoji:
             async for user in reaction.users():
-                users_with_reaction.append(user)
+                users_with_reaction.append(user.id)
     return users_with_reaction
 
 

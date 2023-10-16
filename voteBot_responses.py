@@ -122,6 +122,8 @@ async def vote(message, client):
     await message.add_reaction("🤖")
     print("Lets vote")
     (vote_winner, vote_info) = await utils.get_winner(client)
+    if vote_winner is None:
+        return [f"No options"], False, None
     winner_list.append(vote_winner.id)
     content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
     print(f"winner content: {content}")
@@ -153,6 +155,8 @@ async def deny(message, client):
     global winner_list
     print("Lets vote again")
     (vote_winner, vote_info) = await utils.get_winner(client, winner_list)
+    if vote_winner is None:
+        return [f"No further options"], False, None
     content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
     print(f"the new winner is...\n{utils.untuple_str(content)}\n\n{vote_info}")
     winner_list.append(vote_winner.id)
