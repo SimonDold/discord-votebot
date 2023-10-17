@@ -23,7 +23,7 @@ COPY requirements.txt .
 # Install Python dependencies from requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-ADD git clone https://github.com/SimonDold/discord-votebot.git voteBot/
+RUN git clone https://github.com/SimonDold/discord-votebot.git voteBot/
 
 # Start the votebot
 CMD python3 -u /voteBot/main.py
