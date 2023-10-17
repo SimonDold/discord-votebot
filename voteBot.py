@@ -70,7 +70,7 @@ async def announce_meeting():
 
 
 async def reaction_reaction(message, channel, emoji, user, user_id):
-    if message.content.split()[0] == "Winner" and responses.vote_active:
+    if message.content.split()[0] == "Winner" and responses.get_vote_active():
         print(f"reaction to Winner message with {emoji}")
         if str(emoji) == "✅":
             print(f"accepted {message.content} by reaction")

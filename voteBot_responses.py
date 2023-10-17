@@ -10,6 +10,9 @@ vote_active = False
 date1_string = ""
 date2_string = ""
 
+def get_vote_active():
+    return vote_active
+
 def prep_author_and_content(message):
     assert message.content[0] == BOT_CHAR
     author = message.author
@@ -72,6 +75,7 @@ async def accept_by_rank(rank, channel):
     global winner_list
     global vote_active
     if not vote_active:
+        print("outside of voting phase")
         return [""], False, None
     vote_active = False
     final_winner = winner_list[rank-1]
@@ -97,8 +101,8 @@ async def deny(message, client):
     global winner_list
     global vote_active
     if not vote_active:
+        print("outside of voting phase")
         return [""], False, None
-    vote_active = False
     print("Lets vote again")
     (vote_winner, vote_info) = await utils.get_winner(client, winner_list)
     if vote_winner is None:
