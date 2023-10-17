@@ -6,6 +6,7 @@ from info import VERSION
 from datetime import datetime, timedelta
 
 winner_list = []
+vote_active = False
 date1_string = ""
 date2_string = ""
 
@@ -46,7 +47,7 @@ async def suggest(message, client):
     print(f"key: {key}")
     print(f"author: {author}, ID: {author.id}")
     msg = f"Suggestion:\n{suggestion_key_to_txt(key)}"
-    return [msg], True, utils.PAPER_SUGGESTIONS_CHANNEL_ID
+    return [msg], False, utils.PAPER_SUGGESTIONS_CHANNEL_ID
 
 
 
@@ -54,7 +55,9 @@ async def suggest(message, client):
 
 async def vote(message, client):
     global winner_list
+    global vote_active
     await message.add_reaction("🤖")
+    vote_active = True
     print("Lets vote")
     (vote_winner, vote_info) = await utils.get_winner(client)
     if vote_winner is None:
@@ -67,6 +70,10 @@ async def vote(message, client):
 
 async def accept_by_rank(rank, channel):
     global winner_list
+    global vote_active
+    if not vote_active:
+        return [""], False, None
+    vote_active = False
     final_winner = winner_list[rank-1]
     final_winner_message = await channel.fetch_message(final_winner)
     final_content = final_winner_message.content
@@ -88,6 +95,10 @@ async def accept_by_rank(rank, channel):
 
 async def deny(message, client):
     global winner_list
+    global vote_active
+    if not vote_active:
+        return [""], False, None
+    vote_active = False
     print("Lets vote again")
     (vote_winner, vote_info) = await utils.get_winner(client, winner_list)
     if vote_winner is None:
@@ -98,10 +109,6 @@ async def deny(message, client):
     print(f"Winner list: {winner_list}")
     return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}"], False, None
 
-async def show_marks(message, client):
-    return ["marks DB:\n" + str(bot_memory.get_marks_table())], False, None
-
-
 async def show_admins(message, client):
     return ["admins DB:\n" + str(bot_memory.get_admins_table())], False, None
 
@@ -109,12 +116,10 @@ async def show_admins(message, client):
 async def show_db(message, client):
 
     bi = await bot_info(message, client)
-    sm = await show_marks(message, client)
     sa = await show_admins(message, client)
 
     return [bi[0][0]] + \
            [
-            sm[0][0],
             sa[0][0],
             ], False, None
 
@@ -181,21 +186,6 @@ async def set_next_na(message, client):
     return [], False, None
 
 
-async def mark_paper(message, client):
-    author, content = prep_author_and_content(message)
-    bot_memory.update_marks(content, author.id, True)
-    nick = author.nick
-    if nick is None:
-        nick = author.name
-    return [f"The paper:\n{content}\nwill not be elected if {nick} is not able to attend."], False, None
-
-
-async def unmark_paper(message, client):
-    author, content = prep_author_and_content(message)
-    bot_memory.update_marks(content, author.id, False)
-    await message.add_reaction("✅")
-    return [], False, None
-
 async def announce_new_meeting(message, client):
     author, content = prep_author_and_content(message)
     global date1_string
@@ -244,10 +234,6 @@ responses_dict = {
     "next_na": [set_next_na, f"set the date of the next meeting to N/A"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
     "v": [vote, f"shorthand for {BOT_CHAR}vote"],
-    "mark_paper": [mark_paper, f"mark a paper with '{BOT_CHAR}mark_paper [string]' "
-                               f"to ensure it won't be considered for winning if you cannot join the next meeting. "
-                               f"(This is meant for authors for example. Please do not overuse it)"],
-    "unmark_paper": [unmark_paper, f"undo your '{BOT_CHAR}mark_paper [string]' with '{BOT_CHAR}unmark_paper [string]'"],
     "announce_new_meeting": [announce_new_meeting, f"'{BOT_CHAR}announce_new_meeting [date1] [date2]' to announce"
                                                    " that a new meeting will happen at date1 and the paper will be"
                                                    " decided on date2. Date format %Y/%m/%d"],
@@ -260,7 +246,6 @@ responses_dict = {
     "admin_set_upcoming_date": [admin_set_upcoming_date, f"set the upcoming date for the meeting"],
     "admin_set_upcoming_paper": [admin_set_upcoming_paper, f"set the upcoming paper for the meeting"],
     "admin_announce_meeting": [admin_announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
-    "admin_show_marks": [show_marks, f"show all marks"],
     "admin_show_db": [show_db, f"show all tables from the DB"]
 
 }
@@ -301,6 +286,6 @@ async def handle_responses(message_content, message, is_private, client):
     if command[0:5] == "admin" and (author.id,) not in bot_memory.get_admins_table():
         return ["This command is only for admins."], False, None
     response_function = responses_dict.get(command, [default, "default response function"])[0]
-    if is_private and response_function in [suggest, set_next, set_next_na, vote, mark_paper]:
+    if is_private and response_function in [suggest, set_next, set_next_na, vote]:
         return ["This command is only usable in the public channels."]
     return await response_function(message, client) # expect list of strings and one bool and maybe channel_id

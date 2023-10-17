@@ -12,49 +12,10 @@ UPCOMING_PAPER = "UPCOMING_PAPER"
 
 
 
-def get_marking_users(paper):
-    with conn:
-        query = "SELECT user FROM marks WHERE paper = ?"
-        cursor.execute(query, (paper,))
-        return cursor.fetchall()
-
-def get_marks_table():
-    with conn:
-        cursor.execute("SELECT * FROM marks")
-        return cursor.fetchall()
-
 def get_admins_table():
     with conn:
         cursor.execute("SELECT * FROM admins")
         return cursor.fetchall()
-
-
-def update_marks(paper, user, mark=True):
-    # Connect to the SQLite database
-    paper = str(paper)
-    print("Update marks DB")
-
-    # SQL statements with placeholders
-    insert_query = """
-        INSERT INTO marks (paper, user)
-        SELECT ?, ?
-        WHERE NOT EXISTS (
-            SELECT 1 FROM marks WHERE paper = ? AND user = ?
-        )
-    """
-    delete_query = """
-                DELETE FROM marks
-                WHERE paper = ? AND user = ?
-            """
-    if mark:
-        cursor.execute(insert_query, (paper, user, paper, user))
-        print(f"mark {paper}, {user} addded")
-    else:
-        cursor.execute(delete_query, (paper, user))
-        print(f"mark {paper}, {user} removed")
-
-    # Commit the changes
-    conn.commit()
 
 
 def update_admins(user, add=True):
@@ -87,13 +48,6 @@ def update_admins(user, add=True):
 
 def init(admin_id):
     print("DB created")
-
-    cursor.execute('''
-            CREATE TABLE IF NOT EXISTS marks (
-                paper TEXT,
-                user INT
-            )
-            ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS info (

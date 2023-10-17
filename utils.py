@@ -1,7 +1,4 @@
 import discord
-
-import bot_memory
-
 import math
 import os
 
@@ -37,10 +34,7 @@ async def get_winner(client, winner_list=[]):
         print("collect votes")
         up_voters = await get_reaction_user_list(message, "👍")
         down_voters = await get_reaction_user_list(message, "👎")
-        content = message.content.partition("Suggestion:")[-1][1::]  # remove first word
-        markers = bot_memory.get_marking_users(content)
-        if not markers == []:
-            [markers] = markers
+        markers = await get_reaction_user_list(message, "⭐")
         vote_value = 0
         print("iterate voters")
         for up_voter in up_voters:

@@ -40,6 +40,7 @@ async def self_reactions(message, user_message):
     if "Suggestion:" == user_message.split()[0]:
         await message.add_reaction("👍")
         await message.add_reaction("👎")
+        await message.add_reaction("⭐")
     if user_message.split()[0] == "Winner":
         await message.add_reaction("✅")
         await message.add_reaction("⏩")
@@ -69,7 +70,7 @@ async def announce_meeting():
 
 
 async def reaction_reaction(message, channel, emoji, user, user_id):
-    if message.content.split()[0] == "Winner":
+    if message.content.split()[0] == "Winner" and responses.vote_active:
         print(f"reaction to Winner message with {emoji}")
         if str(emoji) == "✅":
             print(f"accepted {message.content} by reaction")
