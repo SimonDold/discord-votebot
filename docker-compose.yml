@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   vote_bot:
-    image: votebot:1.0
+    image: votebot:2.0
     build:
       context: .
     init: true

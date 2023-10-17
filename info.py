@@ -1,1 +1,1 @@
-VERSION = "2.-1.5 keep reactions"
+VERSION = "2.0"
