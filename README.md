@@ -12,7 +12,7 @@ Setup:
    and invite the bot to your discord server.
    Under Settings/Bot you can Reset the Token to get the 'BOT_TOKEN'.
 
-2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel". Remove the permission to send messages for everyone except the bot.
+2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel". In "paper-suggestions" remove the permission to send messages for everyone except the bot.
 
 1. Copy 'Dockerfile' and 'docker-compose.yml' to your machine (No need to clone the repository. The container will do this for you.)
 Change the relative path 'context' in 'docker-compose.yml' if you put the two files into different locations. 
