@@ -264,7 +264,7 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
            "How can I help you? I know these commands:\n"
 
 
-def help_msg(admin):
+def get_help_msg(admin):
     msg = ""
     for key in responses_dict:
         if (key[0:5] == "admin") == admin:
@@ -273,12 +273,13 @@ def help_msg(admin):
     return [help_msg, msg, post_msg]
 
 async def bot_help(message, client):
-    msg = help_msg(False)
+    print("in bot_help")
+    msg = get_help_msg(False)
     return msg, False, None
 
 
 async def admin_help(message, client):
-    msg = help_msg(True)
+    msg = get_help_msg(True)
     return msg, False, None
 
 
