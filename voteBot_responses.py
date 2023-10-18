@@ -264,17 +264,20 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
            "How can I help you? I know these commands:\n"
 
 
-async def bot_help(message, client):
-    return await admin_help(message, client, admin=False)
-
-
-async def admin_help(message, client, admin=True):
+def help_msg(admin):
     msg = ""
     for key in responses_dict:
         if (key[0:5] == "admin") == admin:
             msg += "\n```" + BOT_CHAR + str(key) + "```" + "\t" + responses_dict[key][1] + "\n"
     post_msg = "\nYou can interact with me in a private chat, too."
-    return [help_msg, msg, post_msg], False, None
+    return [help_msg, msg, post_msg]
+
+async def bot_help(message, client):
+    return help_msg(admin=False), False, None
+
+
+async def admin_help(message, client):
+    return help_msg(admin=True), False, None
 
 
 responses_dict.update({"help": [bot_help, "get a help message."]})
