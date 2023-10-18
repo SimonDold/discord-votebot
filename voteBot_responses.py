@@ -265,7 +265,7 @@ help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react wi
 
 
 async def bot_help(message, client):
-    return admin_help(message, admin=False)
+    return admin_help(message, client, admin=False)
 
 
 async def admin_help(message, client, admin=True):
