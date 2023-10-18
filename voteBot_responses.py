@@ -288,6 +288,7 @@ responses_dict.update({"admin_help": [admin_help2, "get a help message for admin
 
 
 async def handle_responses(message_content, message, is_private, client):
+    print("in handle_responses")
     author = message.author
     if not message_content[0] == BOT_CHAR:
         return []
