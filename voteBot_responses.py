@@ -277,13 +277,13 @@ async def bot_help(message, client):
     return msg, False, None
 
 
-async def admin_help(message, client):
+async def admin_help2(message, client):
     msg = help_msg(True)
     return msg, False, None
 
 
 responses_dict.update({"help": [bot_help, "get a help message."]})
-responses_dict.update({"admin_help": [admin_help, "get a help message for admins."]})
+responses_dict.update({"admin_help": [admin_help2, "get a help message for admins."]})
 
 
 async def handle_responses(message_content, message, is_private, client):
