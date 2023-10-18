@@ -273,6 +273,7 @@ def get_help_msg(admin):
     return [help_msg, msg, post_msg]
 
 async def bot_help(message, client):
+    print("preparing help")
     msg = get_help_msg(False)
     return msg, False, None
 
