@@ -270,7 +270,7 @@ def help_msg(admin):
         if (key[0:5] == "admin") == admin:
             msg += "\n```" + BOT_CHAR + str(key) + "```" + "\t" + responses_dict[key][1] + "\n"
     post_msg = "\nYou can interact with me in a private chat, too."
-    return [help_msg + msg + post_msg]
+    return [help_msg, msg, post_msg]
 
 async def bot_help(message, client):
     msg = help_msg(False)
