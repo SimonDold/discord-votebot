@@ -14,8 +14,8 @@ Setup:
 
 2. Create the text channels "meetings", "paper-suggestions" and "votebot-channel". Remove the permission to send messages for everyone except the bot.
 
-1. Copy 'Dockerfile' and 'docker-compose.yml' to your machine (No need to clone the repository. The container will do this for you.)
-Change the relative path 'context' in 'docker-compose.yml' if you put the two files into different locations. 
+1. Copy 'Dockerfile', 'requirements.txt' and 'docker-compose.yml' to your machine (No need to clone the repository. The container will do this for you.)
+Change the relative path 'context' in 'docker-compose.yml' if you put it into a different locations than the other two. 
 
 1. Create a file '.env' in the same folder where you put 'docker-compose.yml' to define the environment variables.
 It should be of the pattern:
