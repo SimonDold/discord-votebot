@@ -70,6 +70,22 @@ async def vote(message, client):
     print(f"winner content: {content}")
     return [f"Winner is:\n{utils.untuple_str(content)}"], False, None
 
+def increase_date():
+    upcoming_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
+    print(f"extracted previously next_date, now upcoming_date: {upcoming_date}")
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=upcoming_date)
+    print(f"change date")
+    if upcoming_date == "N/A":
+        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
+    else:
+        next_date = datetime.strptime(upcoming_date, "%Y/%m/%d") + timedelta(days=7)
+        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
+
+async def dictate(message, client):
+    author, content = prep_author_and_content(message)
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
+    increase_date()
+    return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
 
 async def accept_by_rank(rank, channel):
     global winner_list
@@ -83,17 +99,10 @@ async def accept_by_rank(rank, channel):
     final_content = final_winner_message.content
     winner_list = []
     await final_winner_message.delete()
-    upcoming_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
-    print(f"extracted previously next_date, now upcoming_date: {upcoming_date}")
-    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=upcoming_date)
+    increase_date()
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=final_content)
-    print(f"change date")
-    if upcoming_date == "N/A":
-        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value="N/A")
-    else:
-        next_date = datetime.strptime(upcoming_date, "%Y/%m/%d") + timedelta(days=7)
-        bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
     print("done accept_by_rank")
+    upcoming_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
     return [f"{utils.untuple_str(final_content)}\n\nwas accepted as winner for the meeting on {upcoming_date}."], False, None
 
 
@@ -238,6 +247,9 @@ responses_dict = {
     "next_na": [set_next_na, f"set the date of the next meeting to N/A"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
     "v": [vote, f"shorthand for {BOT_CHAR}vote"],
+    "dictate": [dictate, f"'{BOT_CHAR}dictate [string]' to bypass suggesting and voting. "
+                         "The next meeting will be announced with the set string as paper. "
+                         "Keep your anti-pitchfork-spray at hand when using this command. "],
     "announce_new_meeting": [announce_new_meeting, f"'{BOT_CHAR}announce_new_meeting [date1] [date2]' to announce"
                                                    " that a new meeting will happen at date1 and the paper will be"
                                                    " decided on date2. Date format %Y/%m/%d"],
