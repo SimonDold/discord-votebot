@@ -5,7 +5,8 @@ import os
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_ID = os.environ["ADMIN_ID"]
 MEETING_CHANNEL_ID = os.environ["MEETING_CHANNEL_ID"]
-PAPER_SUGGESTIONS_CHANNEL_ID = os.environ["PAPER_SUGGESTIONS_CHANNEL_ID"]
+PAPER_SUGGESTING_CHANNEL_ID = os.environ["PAPER_SUGGESTING_CHANNEL_ID"]
+PAPER_VOTING_CHANNEL_ID = os.environ["PAPER_VOTING_CHANNEL_ID"]
 
 
 BOT_CHAR = "!"
@@ -22,7 +23,7 @@ resubmit_waring = "\n\n(already suggested btw)"
 
 
 async def get_winner(client, winner_list=[]):
-    paper_suggestion_channel = client.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID))
+    paper_voting_channel = client.get_channel(int(PAPER_VOTING_CHANNEL_ID))
     meeting_channel = client.get_channel(int(MEETING_CHANNEL_ID))
     join_claim_message = await discord.utils.get(meeting_channel.history(), author__id=client.user.id)
     best = [None, -math.inf]
@@ -30,7 +31,7 @@ async def get_winner(client, winner_list=[]):
     joiners = await get_reaction_user_list(join_claim_message, "🇯")
     skippers = await get_reaction_user_list(join_claim_message, "🇸")
     print("iterate history")
-    async for message in paper_suggestion_channel.history():
+    async for message in paper_voting_channel.history():
         print("collect votes")
         up_voters = await get_reaction_user_list(message, "👍")
         down_voters = await get_reaction_user_list(message, "👎")

@@ -50,7 +50,7 @@ async def suggest(message, client):
     print(f"key: {key}")
     print(f"author: {author}, ID: {author.id}")
     msg = f"Suggestion:\n{suggestion_key_to_txt(key)}"
-    return [msg], False, utils.PAPER_SUGGESTIONS_CHANNEL_ID
+    return [msg], False, utils.PAPER_VOTING_CHANNEL_ID
 
 
 

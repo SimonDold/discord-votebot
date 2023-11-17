@@ -2,7 +2,7 @@ import discord
 import voteBot_responses as responses
 import bot_memory
 
-from utils import BOT_CHAR, BOT_TOKEN, ADMIN_ID, MEETING_CHANNEL_ID, PAPER_SUGGESTIONS_CHANNEL_ID
+from utils import BOT_CHAR, BOT_TOKEN, ADMIN_ID, MEETING_CHANNEL_ID, PAPER_SUGGESTING_CHANNEL_ID, PAPER_VOTING_CHANNEL_ID
 
 CLIENT = None
 
@@ -77,7 +77,7 @@ async def reaction_reaction(message, channel, emoji, user, user_id):
             winner_rank = 1
             if not message.content.split()[1] == "is:":  # if not the very first winner
                 winner_rank = int(message.content.split()[1][1:])
-            await responses.accept_by_rank(winner_rank, CLIENT.get_channel(int(PAPER_SUGGESTIONS_CHANNEL_ID)))
+            await responses.accept_by_rank(winner_rank, CLIENT.get_channel(int(PAPER_VOTING_CHANNEL_ID)))
             print("accepted :)")
             await announce_meeting()
         elif str(emoji) == "⏩":
@@ -109,7 +109,7 @@ def run_vote_bot():
         elif message_content[0] == BOT_CHAR:
             if isinstance(channel, discord.DMChannel):
                 await react_message(message, message_content, is_private=True)
-            elif channel.name in ["paper-suggestions", "votebot-channel"]:
+            elif channel == CLIENT.get_channel(int(PAPER_SUGGESTING_CHANNEL_ID)):
                 print(f"{username} said: '{message_content}' (in {channel.name})")
                 await react_message(message, message_content, is_private=False)
 
