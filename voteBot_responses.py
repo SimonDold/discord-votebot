@@ -242,7 +242,7 @@ responses_dict = {
                          "Resources.\n In Proc. ECP 2001, pp. 121-132. "
                          "https://www.ida.liu.se/divisions/aiics/publications/ECP-2001-Heuristic-Planning-Time.pdf``` "
                          "to suggest this paper for a future meeting.\n"
-                         "no need to follow a specific format."],
+                         "No need to follow a specific format."],
     "next": [set_next, f"set a date for the next meeting with the format %Y/%m/%d"],
     "next_na": [set_next_na, f"set the date of the next meeting to N/A"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
@@ -266,13 +266,13 @@ responses_dict = {
 
 }
 
-help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react with emojis to the suggestions " \
-           "(I remove them but I remember them). " \
+help_msg = "I am the VoteBot you can suggest papers to me. Everyone can react with emojis to the suggestions. " \
            "You can tell me if you plan to join or skip the next meeting. " \
            "I can choose a paper based on the user reactions to the suggestions and their claims to join/skip.\n" \
            "Reactions:\n" \
            "👍: I am looking forward to discuss this paper.\n" \
            "👎: I want you to discuss this paper without me.\n" \
+           "⭐: I want you to wait for me to discuss this paper (please do not overuse).\n" \
            "How can I help you? I know these commands:\n"
 
 
