@@ -80,6 +80,7 @@ async def reaction_reaction(message, channel, emoji, user, user_id):
             await responses.accept_by_rank(winner_rank, CLIENT.get_channel(int(PAPER_VOTING_CHANNEL_ID)))
             print("accepted :)")
             await announce_meeting()
+            await responses.responsibility_note(user)
         elif str(emoji) == "⏩":
             print("denied by reaction")
             [new_winner_message], _, _ = await responses.deny(None, CLIENT)

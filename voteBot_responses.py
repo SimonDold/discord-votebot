@@ -81,10 +81,22 @@ def increase_date():
         next_date = datetime.strptime(upcoming_date, "%Y/%m/%d") + timedelta(days=7)
         bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
 
+
+async def responsibility_note(user):
+    global CLIENT
+    paper = bot_memory.get_info(info_key=bot_memory.UPCOMING_PAPER)
+
+    text = f"You made \n{paper}\n the paper for the upcoming meeting. " \
+           f"Please feel responsible to update the website " \
+           f"https://ai.dmi.unibas.ch/research/reading_group.html\n" \
+           f"or to delegate it."
+    await user.send(text)
+
 async def dictate(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
     increase_date()
+    await responsibility_note(author)
     return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
 
 async def accept_by_rank(rank, channel):
@@ -96,7 +108,7 @@ async def accept_by_rank(rank, channel):
     vote_active = False
     final_winner = winner_list[rank-1]
     final_winner_message = await channel.fetch_message(final_winner)
-    final_content = final_winner_message.content
+    final_content = final_winner_message.content.partition("Suggestion:")[-1][1::] #remove first word
     winner_list = []
     await final_winner_message.delete()
     increase_date()
@@ -293,6 +305,6 @@ async def handle_responses(message_content, message, is_private, client):
     if command[0:5] == "admin" and (author.id,) not in bot_memory.get_admins_table():
         return ["This command is only for admins."], False, None
     response_function = responses_dict.get(command, [default, "default response function"])[0]
-    if is_private and response_function in [suggest, set_next_date, set_upcoming_date, vote] and (author.id,) not in bot_memory.get_admins_table():
+    if is_private and response_function in [suggest, set_next_date, set_upcoming_date, vote, dictate] and (author.id,) not in bot_memory.get_admins_table():
         return ["This command is only usable in the public channels."]
     return await response_function(message, client) # expect list of strings and one bool and maybe channel_id
