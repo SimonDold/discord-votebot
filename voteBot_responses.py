@@ -68,7 +68,10 @@ async def vote(message, client):
     winner_list.append(vote_winner.id)
     content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
     print(f"winner content: {content}")
-    return [f"Winner is:\n{utils.untuple_str(content)}"], False, None
+    return [f"Winner is:\n{utils.untuple_str(content)}\n"
+            f"\n"
+            f"✅: to set it for the upcoming meeting.\n"
+            f"⏩: to see the runner-up."], False, None
 
 def increase_date():
     upcoming_date = bot_memory.get_info(info_key=bot_memory.NEXT_DATE)
