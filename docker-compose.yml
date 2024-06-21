@@ -9,11 +9,11 @@ services:
     volumes:
       - votebot-data:/voteBot/data:rw
     environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - ADMIN_ID=${ADMIN_ID}
-      - MEETING_CHANNEL_ID=${MEETING_CHANNEL_ID}
-      - PAPER_SUGGESTING_CHANNEL_ID=${PAPER_SUGGESTING_CHANNEL_ID}
-      - PAPER_VOTING_CHANNEL_ID=${PAPER_VOTING_CHANNEL_ID}
-      
+      - BOT_TOKEN=${BOT_TOKEN:?BOT_TOKEN is not set. Check your .env file}
+      - ADMIN_ID=${ADMIN_ID:?ADMIN_ID is not set. Check your .env file}
+      - MEETING_CHANNEL_ID=${MEETING_CHANNEL_ID:?MEETING_CHANNEL_ID is not set. Check your .env file}
+      - PAPER_SUGGESTING_CHANNEL_ID=${PAPER_SUGGESTING_CHANNEL_ID:?PAPER_SUGGESTING_CHANNEL_ID is not set. Check your .env file}
+      - PAPER_VOTING_CHANNEL_ID=${PAPER_VOTING_CHANNEL_ID:?PAPER_VOTING_CHANNEL_ID is not set. Check your .env file}
+
 volumes:
   votebot-data:
