@@ -96,10 +96,7 @@ async def responsibility_note(user):
            f"Please feel responsible to update the website " \
            f"https://ai.dmi.unibas.ch/research/reading_group.html\n" \
            f"or to delegate it."
-    nick = user.nick
-    if nick is None:
-        nick = user.name
-    print(f"send {text}\n to {nick} / {user.id}")
+    print(f"send {text}\n to {user.name} / {user.id}")
     await user.send(text)
 
 async def dictate(message, client):
