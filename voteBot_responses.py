@@ -26,7 +26,7 @@ async def default(message, client):
 
 
 async def greet(message, client):
-    author, _ =prep_author_and_content(message)
+    author, _ = prep_author_and_content(message)
     nick = author.nick
     if nick is None:
         nick = author.name
@@ -48,8 +48,11 @@ async def suggest(message, client):
     print(f"content: {content}")
     key = tuple(utils.remove_empty_lines(content))
     print(f"key: {key}")
-    print(f"author: {author}, ID: {author.id}")
-    msg = f"Suggestion:\n{suggestion_key_to_txt(key)}"
+    nick = author.nick
+    if nick is None:
+        nick = author.name
+    print(f"author: {author}, ID: {author.id}, NICK: {nick}")
+    msg = f"Suggestion:\n{suggestion_key_to_txt(key)}\n suggested by {nick}."
     return [msg], False, utils.PAPER_VOTING_CHANNEL_ID
 
 
@@ -68,7 +71,7 @@ async def vote(message, client):
     winner_list.append(vote_winner.id)
     content = vote_winner.content.partition("Suggestion:")[-1][1::] #remove first word
     print(f"winner content: {content}")
-    return [f"Winner is:\n{utils.untuple_str(content)}\n"
+    return [f"Winner with acceptance value {vote_info} is:\n{utils.untuple_str(content)}\n"
             f"\n"
             f"✅: to set it for the upcoming meeting.\n"
             f"⏩: to see the runner-up."], False, None
@@ -93,6 +96,10 @@ async def responsibility_note(user):
            f"Please feel responsible to update the website " \
            f"https://ai.dmi.unibas.ch/research/reading_group.html\n" \
            f"or to delegate it."
+    nick = user.nick
+    if nick is None:
+        nick = user.name
+    print(f"send {text}\n to {nick} / {user.id}")
     await user.send(text)
 
 async def dictate(message, client):
@@ -135,7 +142,7 @@ async def deny(message, client):
     print(f"the new winner is...\n{utils.untuple_str(content)}\n\n{vote_info}")
     winner_list.append(vote_winner.id)
     print(f"Winner list: {winner_list}")
-    return [f"Winner #{len(winner_list)} is:\n{utils.untuple_str(content)}"], False, None
+    return [f"Winner #{len(winner_list)} with acceptance value {vote_info} is:\n{utils.untuple_str(content)}"], False, None
 
 async def show_admins(message, client):
     return ["admins DB:\n" + str(bot_memory.get_admins_table())], False, None

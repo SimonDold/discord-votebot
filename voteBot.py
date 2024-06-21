@@ -3,6 +3,7 @@ import voteBot_responses as responses
 import bot_memory
 
 from utils import BOT_CHAR, BOT_TOKEN, ADMIN_ID, MEETING_CHANNEL_ID, PAPER_SUGGESTING_CHANNEL_ID, PAPER_VOTING_CHANNEL_ID
+from info import VERSION
 
 CLIENT = None
 
@@ -13,7 +14,7 @@ def print(self, *args, sep=' ', end='\n', file=None):
     p("VB:", self)
 
 
-print("HELLO")
+print("VERSION: " + VERSION)
 bot_memory.init(ADMIN_ID)
 intents = discord.Intents.default()  # Create a default Intents object
 intents.reactions = True  # Enable the reactions intent
@@ -56,6 +57,7 @@ async def send_message_in_channel(message, channel):
             chunk = message[offset:offset + 2000]
             offset += 2000
             await channel.send(chunk)
+        print(f"send MESSAGE:'\n{message}\n' in CHANNEL: {channel}")
     except Exception as e:
         print(e)
 
@@ -75,7 +77,7 @@ async def reaction_reaction(message, channel, emoji, user, user_id):
         if str(emoji) == "✅":
             print(f"accepted {message.content} by reaction")
             winner_rank = 1
-            if not message.content.split()[1] == "is:":  # if not the very first winner
+            if not message.content.split()[1] == "with":  # if not the very first winner
                 winner_rank = int(message.content.split()[1][1:])
             await responses.accept_by_rank(winner_rank, CLIENT.get_channel(int(PAPER_VOTING_CHANNEL_ID)))
             print("accepted :)")

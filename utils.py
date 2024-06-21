@@ -19,6 +19,8 @@ W_UK_DOWN = 0
 W_OUT_DOWN = 0
 W_OUT_MARKED = -1000
 
+W_OFFSET = W_IN_UP + W_OUT_UP + W_IN_DOWN + W_OUT_DOWN + W_OUT_MARKED
+
 resubmit_waring = "\n\n(already suggested btw)"
 
 
@@ -30,13 +32,18 @@ async def get_winner(client, winner_list=[]):
     print("collect joiners/skippers")
     joiners = await get_reaction_user_list(join_claim_message, "🇯")
     skippers = await get_reaction_user_list(join_claim_message, "🇸")
+    print("joiners: ", joiners)
+    print("skippers: ", skippers)
     print("iterate history")
     async for message in paper_voting_channel.history():
-        print("collect votes")
+        print("collect votes for: ", message.content)
         up_voters = await get_reaction_user_list(message, "👍")
+        print("up_voters:", up_voters)
         down_voters = await get_reaction_user_list(message, "👎")
+        print("down_voters:", down_voters)
         markers = await get_reaction_user_list(message, "⭐")
-        vote_value = 0
+        print("markers:", markers)
+        vote_value = -W_OFFSET
         print("iterate voters")
         for up_voter in up_voters:
             if up_voter in joiners:
@@ -60,8 +67,6 @@ async def get_winner(client, winner_list=[]):
         if vote_value > best[1] and (not message.id in winner_list):
             print("new best found")
             best = [message, vote_value]
-            print("assign new best")
-    print("winner found")
     print(f"winner found {best[0]} {best[1]}")
     return (best[0], best[1])
 

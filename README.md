@@ -26,7 +26,7 @@ It should be of the pattern:
         PAPER_SUGGESTING_CHANNEL_ID=<id of the textchannel called 'paper-suggesting'>
         PAPER_VOTING_CHANNEL_ID=<id of the textchannel called 'paper-voting'>
 
-1. Navigate into the folder with 'docker-compose.yml'.
+1. Navigate into the folder that contains the 'docker-compose.yml' file.
 
 1. Start the bot with:
 
