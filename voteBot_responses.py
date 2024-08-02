@@ -221,6 +221,23 @@ async def announce_new_meeting(message, client):
         await message.add_reaction("❌")
     return [], False, None
 
+async def echo(message, client):
+    author, content = prep_author_and_content(message)
+
+    channel_ID_str = content.split()[0]
+    channel_ID = int(channel_ID_str)
+    return [content[len(channel_ID_str)::]], False, channel_ID
+
+async def echo_user(message, client):
+    author, content = prep_author_and_content(message)
+
+    user_ID_str = content.split()[0]
+    user_ID = int(user_ID_str)
+
+    user = await client.fetch_user(user_ID)
+
+    await user.send(content[len(user_ID_str)::])
+    return [], False, None
 
 async def add_admin(message, client):
     author, content = prep_author_and_content(message)
@@ -267,7 +284,9 @@ responses_dict = {
     "admin_version": [version, f"check the version"],
     "admin_set_upcoming_paper": [admin_set_upcoming_paper, f"set the upcoming paper for the meeting"],
     "admin_announce_meeting": [admin_announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
-    "admin_show_db": [show_db, f"show all tables from the DB"]
+    "admin_show_db": [show_db, f"show all tables from the DB"],
+    "admin_echo": [echo, f"Let the VoteBot say something '{BOT_CHAR}admin_echo [channel_ID] [string]'"],
+    "admin_echo_user": [echo_user, f"Let the VoteBot say something '{BOT_CHAR}admin_echo [user_ID] [string]'"],
 
 }
 

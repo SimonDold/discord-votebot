@@ -1,1 +1,1 @@
-VERSION = "2.1.4 show suggester and more logging "
+VERSION = "2.1.5 echo"
