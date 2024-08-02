@@ -30,7 +30,10 @@ async def react_message(message, message_content, is_private):
             while offset < len(response):
                 chunk = response[offset:offset + 2000]
                 offset += 2000
-                await message.author.send(response) if CLIENT is None else await CLIENT.get_channel(int(channel_id)).send(chunk)
+                if CLIENT is None or CLIENT.get_channel(int(channel_id)) is None:
+                    await message.author.send(response)
+                else:
+                    await CLIENT.get_channel(int(channel_id)).send(chunk)
         if delete:
             await message.delete()
     except Exception as e:
