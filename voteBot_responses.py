@@ -252,7 +252,7 @@ async def remove_admin(message, client):
     await message.add_reaction("✅")
     return [], False, None
 
-async def admin_announce_meeting(message, client):
+async def announce_meeting(message, client):
     return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
 
 
@@ -276,6 +276,7 @@ responses_dict = {
     "announce_new_meeting": [announce_new_meeting, f"'{BOT_CHAR}announce_new_meeting [date1] [date2]' to announce"
                                                    " that a new meeting will happen at date1 and the paper will be"
                                                    " decided on date2. Date format %Y/%m/%d"],
+    "announce_meeting": [announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
     # admin commands
     "admin_add_admin": [add_admin, f"add an admin with '{BOT_CHAR}admin_add_admin [user_ID]'"],
     "admin_remove_admin": [remove_admin, f"remove an admin with '{BOT_CHAR}admin_remove_admin [user_ID]'"],
@@ -283,7 +284,6 @@ responses_dict = {
     "admin_hi": [greet, f"greeting each other"],
     "admin_version": [version, f"check the version"],
     "admin_set_upcoming_paper": [admin_set_upcoming_paper, f"set the upcoming paper for the meeting"],
-    "admin_announce_meeting": [admin_announce_meeting, f"announce a meeting with the current next/upcoming date and paper"],
     "admin_show_db": [show_db, f"show all tables from the DB"],
     "admin_echo": [echo, f"Let the VoteBot say something '{BOT_CHAR}admin_echo [channel_ID] [string]'"],
     "admin_echo_user": [echo_user, f"Let the VoteBot say something '{BOT_CHAR}admin_echo [user_ID] [string]'"],
