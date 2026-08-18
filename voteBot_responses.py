@@ -185,6 +185,87 @@ def new_meeting_announcment():
     return f"For the next meeting on {date1_string} we have the vote on {date2_string}."
 
 
+def parse_meeting_date(date_string):
+    try:
+        return datetime.strptime(date_string, "%Y/%m/%d")
+    except ValueError:
+        return None
+
+
+def announce_current_meeting():
+    return [meeting_announcment(), vote_announcement()], False, utils.MEETING_CHANNEL_ID
+
+
+async def update_upcoming_date(message, client):
+    author, content = prep_author_and_content(message)
+    upcoming_date = parse_meeting_date(content)
+    if upcoming_date is None:
+        await message.add_reaction("❌")
+        return [], False, None
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
+    next_date = upcoming_date + timedelta(days=7)
+    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=next_date.strftime("%Y/%m/%d"))
+    await message.add_reaction("✅")
+    return announce_current_meeting()
+
+
+async def update_next_date(message, client):
+    author, content = prep_author_and_content(message)
+    next_date = parse_meeting_date(content)
+    upcoming_date = bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE)
+    current_upcoming_date = parse_meeting_date(upcoming_date)
+    if next_date is None or (upcoming_date != "N/A" and
+                             (current_upcoming_date is None or current_upcoming_date > next_date)):
+        await message.add_reaction("❌")
+        return [], False, None
+    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
+    await message.add_reaction("✅")
+    return announce_current_meeting()
+
+
+async def update_paper(message, client):
+    author, content = prep_author_and_content(message)
+    if not content:
+        await message.add_reaction("❌")
+        return [], False, None
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=content)
+    await message.add_reaction("✅")
+    return announce_current_meeting()
+
+
+async def update_dates(message, client):
+    author, content = prep_author_and_content(message)
+    dates = content.split()
+    if len(dates) != 2:
+        await message.add_reaction("❌")
+        return [], False, None
+    upcoming_date, next_date = map(parse_meeting_date, dates)
+    if upcoming_date is None or next_date is None or upcoming_date > next_date:
+        await message.add_reaction("❌")
+        return [], False, None
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=dates[0])
+    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=dates[1])
+    await message.add_reaction("✅")
+    return announce_current_meeting()
+
+
+async def update_all(message, client):
+    author, content = prep_author_and_content(message)
+    parts = content.split(maxsplit=2)
+    if len(parts) != 3:
+        await message.add_reaction("❌")
+        return [], False, None
+    upcoming_date, next_date = map(parse_meeting_date, parts[:2])
+    if upcoming_date is None or next_date is None or upcoming_date > next_date:
+        await message.add_reaction("❌")
+        return [], False, None
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=parts[0])
+    bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=parts[1])
+    bot_memory.set_info(info_key=bot_memory.UPCOMING_PAPER, info_value=parts[2])
+    await message.add_reaction("✅")
+    return announce_current_meeting()
+
+
 async def set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
@@ -268,6 +349,11 @@ responses_dict = {
                          "No need to follow a specific format."],
     "set_next_date": [set_next_date, f"set a date for the next meeting with the format %Y/%m/%d"],
     "set_upcoming_date": [set_upcoming_date, f"set a date for the upcoming meeting with the format %Y/%m/%d"],
+    "update_upcoming_date": [update_upcoming_date, f"set the upcoming date and the following date one week later, then announce the meeting"],
+    "update_next_date": [update_next_date, f"set the next meeting date, then announce the meeting"],
+    "update_paper": [update_paper, f"set the upcoming paper, then announce the meeting"],
+    "update_dates": [update_dates, f"set both meeting dates: '{BOT_CHAR}update_dates [upcoming date] [next date]'"],
+    "update_all": [update_all, f"set both dates and the paper: '{BOT_CHAR}update_all [upcoming date] [next date] [paper]'"],
     "vote": [vote, "Returns a paper based on the user reactions to the suggestions and their claims to join/skip."],
     "v": [vote, f"shorthand for {BOT_CHAR}vote"],
     "dictate": [dictate, f"'{BOT_CHAR}dictate [string]' to bypass suggesting and voting. "
@@ -331,6 +417,8 @@ async def handle_responses(message_content, message, is_private, client):
     if command[0:5] == "admin" and (author.id,) not in bot_memory.get_admins_table():
         return ["This command is only for admins."], False, None
     response_function = responses_dict.get(command, [default, "default response function"])[0]
-    if is_private and response_function in [suggest, set_next_date, set_upcoming_date, vote, dictate] and (author.id,) not in bot_memory.get_admins_table():
+    if is_private and response_function in [suggest, set_next_date, set_upcoming_date,
+                                            update_upcoming_date, update_next_date, update_paper,
+                                            update_dates, update_all, vote, dictate] and (author.id,) not in bot_memory.get_admins_table():
         return ["This command is only usable in the public channels."]
     return await response_function(message, client) # expect list of strings and one bool and maybe channel_id
