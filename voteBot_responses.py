@@ -185,8 +185,27 @@ def new_meeting_announcment():
     return f"For the next meeting on {date1_string} we have the vote on {date2_string}."
 
 
+def dates_are_in_order(upcoming_date, next_date):
+    """Return whether two configured dates are valid and non-decreasing.
+
+    ``N/A`` is used before the meeting schedule has been initialized, so it
+    cannot be meaningfully compared to a real date and is allowed here.
+    """
+    try:
+        upcoming = None if upcoming_date == "N/A" else datetime.strptime(upcoming_date, "%Y/%m/%d")
+        next_meeting = None if next_date == "N/A" else datetime.strptime(next_date, "%Y/%m/%d")
+    except ValueError:
+        return False
+    if upcoming is None or next_meeting is None:
+        return True
+    return upcoming <= next_meeting
+
+
 async def set_upcoming_date(message, client):
     author, content = prep_author_and_content(message)
+    if not dates_are_in_order(content, bot_memory.get_info(info_key=bot_memory.NEXT_DATE)):
+        await message.add_reaction("❌")
+        return [], False, None
     bot_memory.set_info(info_key=bot_memory.UPCOMING_DATE, info_value=content)
     await message.add_reaction("✅")
     return [], False, None
@@ -194,6 +213,9 @@ async def set_upcoming_date(message, client):
 
 async def set_next_date(message, client):
     author, content = prep_author_and_content(message)
+    if not dates_are_in_order(bot_memory.get_info(info_key=bot_memory.UPCOMING_DATE), content):
+        await message.add_reaction("❌")
+        return [], False, None
     bot_memory.set_info(info_key=bot_memory.NEXT_DATE, info_value=content)
     await message.add_reaction("✅")
     return [], False, None
