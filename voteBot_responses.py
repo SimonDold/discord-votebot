@@ -272,6 +272,7 @@ responses_dict = {
     "v": [vote, f"shorthand for {BOT_CHAR}vote"],
     "dictate": [dictate, f"'{BOT_CHAR}dictate [string]' to bypass suggesting and voting. "
                          "The next meeting will be announced with the set string as paper. "
+                         "Like `!vote`, this will update the `upcoming date` to the current `next date` value. "
                          "Keep your anti-pitchfork-spray at hand when using this command. "],
     "announce_new_meeting": [announce_new_meeting, f"'{BOT_CHAR}announce_new_meeting [date1] [date2]' to announce"
                                                    " that a new meeting will happen at date1 and the paper will be"
